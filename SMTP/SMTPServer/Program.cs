@@ -24,6 +24,7 @@ namespace SMTPServer
             {
                 var client = listener.AcceptTcpClient();
                 var server = new SMTPServer(client, clientNumber);
+                ++clientNumber;
                 var thread = new Thread(server.Run);
                 thread.Start();
             }
