@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,29 +13,46 @@ namespace SMTPServer
     {
         public static void Main()
         {
-            var listener = new TcpListener(IPAddress.Any, 25);
+            const int port = 25;
+            var listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
             Console.WriteLine("Waiting for connections...");
+
+            var clientNumber = 0;
 
             while (true)
             {
                 var client = listener.AcceptTcpClient();
-                var server = new SMTPServer(client);
+                var server = new SMTPServer(client, clientNumber);
                 var thread = new Thread(server.Run);
                 thread.Start();
             }
         }
     }
 
+    /// <summary>
+    /// SMTP server
+    /// </summary>
     public class SMTPServer
     {
         private TcpClient client;
+        private int number;
+        private int amount = 0;
 
-        public SMTPServer(TcpClient client)
+        /// <summary>
+        /// SMTP server constructor
+        /// </summary>
+        /// <param name="client">TCP client</param>
+        /// <param name="number">Number of server</param>
+        public SMTPServer(TcpClient client, int number)
         {
             this.client = client;
+            this.number = number;
         }
 
+        /// <summary>
+        /// Runs SMTP server
+        /// </summary>
         public void Run()
         {
             Console.WriteLine("Connection established.");
@@ -131,6 +150,24 @@ namespace SMTPServer
                                     data += response == Environment.NewLine ? response : response + Environment.NewLine;
                                 }
                             }
+
+                            var directory = Directory.GetCurrentDirectory() + ChangeDirectoryUp(4) + "Mail";
+                            if (!Directory.Exists(directory))
+                            {
+                                Directory.CreateDirectory(directory);
+                            }
+
+                            var message = "";
+                            message += $"From: {sender}" + Environment.NewLine;
+                            message += $"Sent : {DateTime.UtcNow.ToString(new CultureInfo(CultureInfo.CurrentCulture.Name))}, UTC" + Environment.NewLine;
+                            message += $"To: {string.Join("; ", recipients.ToArray())}" + Environment.NewLine + Environment.NewLine;
+                            message += data;
+                            using (var streamWriter = File.CreateText(directory + Path.AltDirectorySeparatorChar + $"mail{number}_{amount}.txt"))
+                            {
+                                streamWriter.Write(message);
+                            }
+                            ++amount;
+
                             Write("250 OK");
                         }
                     }
@@ -150,6 +187,25 @@ namespace SMTPServer
             Console.WriteLine("Connection closed");
         }
 
+        /// <summary>
+        /// Goes up in the directory path
+        /// </summary>
+        /// <param name="amount">Amount of ups</param>
+        /// <returns>Directory after going up</returns>
+        private string ChangeDirectoryUp(int amount)
+        {
+            var directory = "";
+            for (var i = 0; i < amount; ++i)
+            {
+                directory += Path.AltDirectorySeparatorChar + "..";
+            }
+            return directory + Path.AltDirectorySeparatorChar;
+        }
+
+        /// <summary>
+        /// Writes message to TCP client's stream
+        /// </summary>
+        /// <param name="message">Message to write</param>
         private void Write(string message)
         {
             var stream = client.GetStream();
@@ -158,6 +214,10 @@ namespace SMTPServer
             stream.Flush();
         }
 
+        /// <summary>
+        /// Reads data from TCP client's stream
+        /// </summary>
+        /// <returns>Data from stream</returns>
         private string Read()
         {
             var messageBytes = new byte[8192];
