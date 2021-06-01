@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31321.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMTPClient", "SMTPClient\SMTPClient.csproj", "{E6C34BA0-3885-4260-AEC0-98863C3B7C23}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SMTPServer", "SMTPServer\SMTPServer.csproj", "{20E56C54-B2E6-46A0-A2AE-FED61B74A4B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E6C34BA0-3885-4260-AEC0-98863C3B7C23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6C34BA0-3885-4260-AEC0-98863C3B7C23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6C34BA0-3885-4260-AEC0-98863C3B7C23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6C34BA0-3885-4260-AEC0-98863C3B7C23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E56C54-B2E6-46A0-A2AE-FED61B74A4B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E56C54-B2E6-46A0-A2AE-FED61B74A4B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E56C54-B2E6-46A0-A2AE-FED61B74A4B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E56C54-B2E6-46A0-A2AE-FED61B74A4B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6868F97D-F769-4FE9-9379-FA157E57E378}
+	EndGlobalSection
+EndGlobal
