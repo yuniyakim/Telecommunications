@@ -56,7 +56,7 @@ namespace SMTPServer
         /// </summary>
         public void Run()
         {
-            Console.WriteLine("Connection established.");
+            Console.WriteLine($"Connection {number} established.");
             Write("220 localhost SMTP ready");
 
             var response = "";
@@ -194,7 +194,7 @@ namespace SMTPServer
             } while (!quitFlag);
 
             client.Close();
-            Console.WriteLine("Connection closed");
+            Console.WriteLine($"Connection {number} closed.");
         }
 
         /// <summary>
