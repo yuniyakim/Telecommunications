@@ -38,7 +38,7 @@ namespace SMTPServer
             Console.WriteLine("Connection established.");
             Write("220 localhost SMTP ready");
 
-            var message = "";
+            var response = "";
             var quitFlag = false;
 
             var name = "";
@@ -50,7 +50,7 @@ namespace SMTPServer
             {
                 try
                 {
-                    message = Read();
+                    response = Read().Trim();
                 }
                 catch (Exception e)
                 {
@@ -58,45 +58,76 @@ namespace SMTPServer
                     break;
                 }
 
-                if (message.Length > 0)
+                if (response.Length > 0)
                 {
-                    if (message.StartsWith("HELO") || message.StartsWith("helo"))
-                    {
-                        Write("250 localhost");
-                    }
-                    else if (message.StartsWith("RCPT TO:") || message.StartsWith("rcpt to:"))
+                    if (response.StartsWith("HELO ") || response.StartsWith("helo "))
                     {
                         try
                         {
-                            recipient = message.Substring(8);
+                            name = response.Substring(5);
                         }
                         catch
                         {
-                            Write("501 Syntactically invalid RCPT TO argument(s)");
+                            Write("501 Invalid argument");
                             continue;
                         }
-                        Write("250 OK");
+                        Write("250 ");
                     }
-                    else if (message.StartsWith("MAIL FROM:") || message.StartsWith("mail from:"))
+                    else if (response.StartsWith("RCPT TO:") || response.StartsWith("rcpt to:"))
                     {
                         try
                         {
-                            sender = message.Substring(10);
+                            recipient = response.Substring(8);
                         }
                         catch
                         {
-                            Write("501 Syntactically invalid MAIL FROM argument(s)");
+                            Write("501 Invalid argument");
                             continue;
                         }
-                        Write("250 OK");
+                        Write($"250 {recipient} recipient accepted");
                     }
-                    else if (message.StartsWith("DATA") || message.StartsWith("data"))
+                    else if (response.StartsWith("MAIL FROM:") || response.StartsWith("mail from:"))
+                    {
+                        try
+                        {
+                            sender = response.Substring(10);
+                        }
+                        catch
+                        {
+                            Write("501 Invalid argument");
+                            continue;
+                        }
+                        Write($"250 {sender} sender accepted");
+                    }
+                    else if (response == "DATA" || response == "data")
                     {
                         Write("354 Enter message, ending with \".\" on a line by itself");
-                        message = Read();
+                        var message = "";
+                        while (true)
+                        {
+                            try
+                            {
+                                response = Read().Trim();
+                                Console.WriteLine(response);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                                break;
+                            }
+                            if (response.Length > 0)
+                            {
+                                if (response == ".")
+                                {
+                                    break;
+                                }
+                                message += response;
+                            }
+                            message += "\n";
+                        }
                         Write("250 OK");
                     }
-                    else if (message == "QUIT" || message == "quit")
+                    else if (response == "QUIT" || response == "quit")
                     {
                         Write("221 Bye");
                         quitFlag = !quitFlag;

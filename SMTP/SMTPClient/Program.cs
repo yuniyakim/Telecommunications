@@ -17,29 +17,46 @@ namespace SMTPClient
                 var client = new TcpClient();
                 client.Connect(server, port);
 
-                var response = new byte[256];
+                var responseBytes = new byte[256];
                 var stream = client.GetStream();
                 Console.WriteLine("Connection established.");
 
                 var message = "";
                 var numberOfBytes = 0;
-                do
+
+                while (true)
                 {
-                    do
+                    numberOfBytes = stream.Read(responseBytes, 0, responseBytes.Length);
+                    var response = Encoding.UTF8.GetString(responseBytes, 0, numberOfBytes);
+                    Console.WriteLine(response);
+
+                    if (response.StartsWith("221"))
                     {
-                        numberOfBytes = stream.Read(response, 0, response.Length);
+                        break;
                     }
-                    while (numberOfBytes == 0);
-                    Console.WriteLine(Encoding.UTF8.GetString(response, 0, numberOfBytes));
-                    message = Console.ReadLine();
+                    else if (response.StartsWith("354"))
+                    {
+                        numberOfBytes = 0;
+                        var data = "";
+                        do
+                        {
+                            data = Console.ReadLine();
+                            var dataBytes = Encoding.UTF8.GetBytes(data);
+                            stream.Write(dataBytes, 0, dataBytes.Length);
+                            stream.Flush();
+                        }
+                        while (data.Trim() != ".");
+                        continue;
+                    }
+
+                    message = Console.ReadLine().Trim();
                     var messageBytes = Encoding.UTF8.GetBytes(message);
                     stream.Write(messageBytes, 0, messageBytes.Length);
                     stream.Flush();
-                    numberOfBytes = 0;
-                } while (message != "QUIT" && message != "quit");
+                }
 
-                numberOfBytes = stream.Read(response, 0, response.Length);
-                Console.WriteLine(Encoding.UTF8.GetString(response, 0, numberOfBytes));
+                numberOfBytes = stream.Read(responseBytes, 0, responseBytes.Length);
+                Console.WriteLine(Encoding.UTF8.GetString(responseBytes, 0, numberOfBytes));
 
                 stream.Close();
                 client.Close();
