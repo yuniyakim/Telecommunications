@@ -80,6 +80,11 @@ namespace SMTPServer
 
                 if (response.Length > 0)
                 {
+                    if (response.ToLower() == "helo" || response.ToLower() == "mail from" || response.ToLower() == "rcpt to")
+                    {
+                        Write("501 Invalid argument");
+                        continue;
+                    }
                     if (response.StartsWith("HELO ") || response.StartsWith("helo ") || response.StartsWith("Helo"))
                     {
                         try
@@ -93,7 +98,7 @@ namespace SMTPServer
                         }
                         Write($"250 Hello {name}");
                     }
-                    else if (response.StartsWith("RCPT TO:") || response.StartsWith("rcpt to:") || response.StartsWith("Rcpt to:"))
+                    else if (response.StartsWith("RCPT TO ") || response.StartsWith("rcpt to ") || response.StartsWith("Rcpt to "))
                     {
                         var recipient = "";
                         try
@@ -108,7 +113,7 @@ namespace SMTPServer
                         recipients.Add(recipient);
                         Write($"250 {recipient} recipient accepted");
                     }
-                    else if (response.StartsWith("MAIL FROM:") || response.StartsWith("mail from:") || response.StartsWith("Mail from:"))
+                    else if (response.StartsWith("MAIL FROM ") || response.StartsWith("mail from ") || response.StartsWith("Mail from "))
                     {
                         try
                         {
@@ -176,6 +181,10 @@ namespace SMTPServer
                         Write("221 Bye");
                         quitFlag = !quitFlag;
                     }
+                    else if (response.StartsWith("NOOP") || response.StartsWith("noop") || response.StartsWith("Noop"))
+                    {
+                        Write("250 OK");
+                    }
                     else
                     {
                         Write("500 Invalid command");
@@ -209,7 +218,7 @@ namespace SMTPServer
         private void Write(string message)
         {
             var stream = client.GetStream();
-            var messageBytes = Encoding.ASCII.GetBytes(message);
+            var messageBytes = Encoding.UTF8.GetBytes(message);
             stream.Write(messageBytes, 0, messageBytes.Length);
             stream.Flush();
         }
@@ -222,7 +231,7 @@ namespace SMTPServer
         {
             var messageBytes = new byte[8192];
             var numberOfBytes = client.GetStream().Read(messageBytes, 0, 8192);
-            var message = Encoding.ASCII.GetString(messageBytes, 0, numberOfBytes);
+            var message = Encoding.UTF8.GetString(messageBytes, 0, numberOfBytes);
             return message;
         }
     }
