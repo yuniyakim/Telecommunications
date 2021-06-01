@@ -40,6 +40,12 @@ namespace SMTPServer
 
             var message = "";
             var quitFlag = false;
+
+            var name = "";
+            var sender = "";
+            var recipient = "";
+            var data = "";
+
             do
             {
                 try
@@ -60,10 +66,28 @@ namespace SMTPServer
                     }
                     else if (message.StartsWith("RCPT TO:") || message.StartsWith("rcpt to:"))
                     {
+                        try
+                        {
+                            recipient = message.Substring(8);
+                        }
+                        catch
+                        {
+                            Write("501 Syntactically invalid RCPT TO argument(s)");
+                            continue;
+                        }
                         Write("250 OK");
                     }
                     else if (message.StartsWith("MAIL FROM:") || message.StartsWith("mail from:"))
                     {
+                        try
+                        {
+                            sender = message.Substring(10);
+                        }
+                        catch
+                        {
+                            Write("501 Syntactically invalid MAIL FROM argument(s)");
+                            continue;
+                        }
                         Write("250 OK");
                     }
                     else if (message.StartsWith("DATA") || message.StartsWith("data"))
@@ -91,7 +115,7 @@ namespace SMTPServer
         private void Write(string message)
         {
             var stream = client.GetStream();
-            var messageBytes = new UTF8Encoding().GetBytes(message);
+            var messageBytes = Encoding.UTF8.GetBytes(message);
             stream.Write(messageBytes, 0, messageBytes.Length);
             stream.Flush();
         }
@@ -100,7 +124,7 @@ namespace SMTPServer
         {
             var messageBytes = new byte[8192];
             var numberOfBytes = client.GetStream().Read(messageBytes, 0, 8192);
-            var message = new UTF8Encoding().GetString(messageBytes, 0, numberOfBytes);
+            var message = Encoding.UTF8.GetString(messageBytes, 0, numberOfBytes);
             return message;
         }
     }

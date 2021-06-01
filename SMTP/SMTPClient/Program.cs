@@ -17,8 +17,7 @@ namespace SMTPClient
                 var client = new TcpClient();
                 client.Connect(server, port);
 
-                var data = new byte[128];
-                var response = new StringBuilder();
+                var response = new byte[256];
                 var stream = client.GetStream();
                 Console.WriteLine("Connection established.");
 
@@ -28,19 +27,19 @@ namespace SMTPClient
                 {
                     do
                     {
-                        numberOfBytes = stream.Read(data, 0, data.Length);
+                        numberOfBytes = stream.Read(response, 0, response.Length);
                     }
                     while (numberOfBytes == 0);
-                    Console.WriteLine(new UTF8Encoding().GetString(data, 0, numberOfBytes));
+                    Console.WriteLine(Encoding.UTF8.GetString(response, 0, numberOfBytes));
                     message = Console.ReadLine();
-                    var messageBytes = new UTF8Encoding().GetBytes(message);
+                    var messageBytes = Encoding.UTF8.GetBytes(message);
                     stream.Write(messageBytes, 0, messageBytes.Length);
                     stream.Flush();
                     numberOfBytes = 0;
                 } while (message != "QUIT" && message != "quit");
 
-                numberOfBytes = stream.Read(data, 0, data.Length);
-                Console.WriteLine(new UTF8Encoding().GetString(data, 0, numberOfBytes));
+                numberOfBytes = stream.Read(response, 0, response.Length);
+                Console.WriteLine(Encoding.UTF8.GetString(response, 0, numberOfBytes));
 
                 stream.Close();
                 client.Close();
