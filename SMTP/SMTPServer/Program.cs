@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -43,7 +44,7 @@ namespace SMTPServer
 
             var name = "";
             var sender = "";
-            var recipient = "";
+            var recipients = new List<string>();
             var data = "";
 
             do
@@ -60,7 +61,7 @@ namespace SMTPServer
 
                 if (response.Length > 0)
                 {
-                    if (response.StartsWith("HELO ") || response.StartsWith("helo "))
+                    if (response.StartsWith("HELO ") || response.StartsWith("helo ") || response.StartsWith("Helo"))
                     {
                         try
                         {
@@ -71,10 +72,11 @@ namespace SMTPServer
                             Write("501 Invalid argument");
                             continue;
                         }
-                        Write("250 ");
+                        Write($"250 Hello {name}");
                     }
-                    else if (response.StartsWith("RCPT TO:") || response.StartsWith("rcpt to:"))
+                    else if (response.StartsWith("RCPT TO:") || response.StartsWith("rcpt to:") || response.StartsWith("Rcpt to:"))
                     {
+                        var recipient = "";
                         try
                         {
                             recipient = response.Substring(8);
@@ -84,9 +86,10 @@ namespace SMTPServer
                             Write("501 Invalid argument");
                             continue;
                         }
+                        recipients.Add(recipient);
                         Write($"250 {recipient} recipient accepted");
                     }
-                    else if (response.StartsWith("MAIL FROM:") || response.StartsWith("mail from:"))
+                    else if (response.StartsWith("MAIL FROM:") || response.StartsWith("mail from:") || response.StartsWith("Mail from:"))
                     {
                         try
                         {
@@ -99,35 +102,42 @@ namespace SMTPServer
                         }
                         Write($"250 {sender} sender accepted");
                     }
-                    else if (response == "DATA" || response == "data")
+                    else if (response == "DATA" || response == "data" || response.StartsWith("Data"))
                     {
-                        Write("354 Enter message, ending with \".\" on a line by itself");
-                        var message = "";
-                        while (true)
+                        if (sender == "" || recipients.Count == 0)
                         {
-                            try
+                            Write(sender == "" ? "501 Empty sender" : "501 Empty recipient");
+                        }
+                        else
+                        {
+                            Write("354 Enter message, ending with \".\" on a line by itself");
+                            var message = "";
+                            while (true)
                             {
-                                response = Read().Trim();
-                                Console.WriteLine(response);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e.Message);
-                                break;
-                            }
-                            if (response.Length > 0)
-                            {
-                                if (response == ".")
+                                try
                                 {
+                                    response = Read().Trim();
+                                    Console.WriteLine(response);
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e.Message);
                                     break;
                                 }
-                                message += response;
+                                if (response.Length > 0)
+                                {
+                                    if (response == ".")
+                                    {
+                                        break;
+                                    }
+                                    message += response;
+                                }
+                                message += "\n";
                             }
-                            message += "\n";
+                            Write("250 OK");
                         }
-                        Write("250 OK");
                     }
-                    else if (response == "QUIT" || response == "quit")
+                    else if (response == "QUIT" || response == "quit" || response.StartsWith("Quit"))
                     {
                         Write("221 Bye");
                         quitFlag = !quitFlag;
