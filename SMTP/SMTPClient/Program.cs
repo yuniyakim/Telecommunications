@@ -32,6 +32,8 @@ namespace SMTPClient
 
                     if (response.StartsWith("221"))
                     {
+                        numberOfBytes = stream.Read(responseBytes, 0, responseBytes.Length);
+                        Console.WriteLine(Encoding.UTF8.GetString(responseBytes, 0, numberOfBytes));
                         break;
                     }
                     else if (response.StartsWith("354"))
@@ -54,9 +56,6 @@ namespace SMTPClient
                     stream.Write(messageBytes, 0, messageBytes.Length);
                     stream.Flush();
                 }
-
-                numberOfBytes = stream.Read(responseBytes, 0, responseBytes.Length);
-                Console.WriteLine(Encoding.UTF8.GetString(responseBytes, 0, numberOfBytes));
 
                 stream.Close();
                 client.Close();
