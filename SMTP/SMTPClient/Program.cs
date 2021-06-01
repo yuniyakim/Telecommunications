@@ -27,13 +27,13 @@ namespace SMTPClient
                 while (true)
                 {
                     numberOfBytes = stream.Read(responseBytes, 0, responseBytes.Length);
-                    var response = Encoding.UTF8.GetString(responseBytes, 0, numberOfBytes);
+                    var response = Encoding.ASCII.GetString(responseBytes, 0, numberOfBytes);
                     Console.WriteLine(response);
 
                     if (response.StartsWith("221"))
                     {
                         numberOfBytes = stream.Read(responseBytes, 0, responseBytes.Length);
-                        Console.WriteLine(Encoding.UTF8.GetString(responseBytes, 0, numberOfBytes));
+                        Console.WriteLine(Encoding.ASCII.GetString(responseBytes, 0, numberOfBytes));
                         break;
                     }
                     else if (response.StartsWith("354"))
@@ -43,8 +43,16 @@ namespace SMTPClient
                         do
                         {
                             data = Console.ReadLine();
-                            var dataBytes = Encoding.UTF8.GetBytes(data);
-                            stream.Write(dataBytes, 0, dataBytes.Length);
+                            if (data == "")
+                            {
+                                var dataBytes = Encoding.ASCII.GetBytes(Environment.NewLine);
+                                stream.Write(dataBytes, 0, dataBytes.Length);
+                            }
+                            else
+                            {
+                                var dataBytes = Encoding.ASCII.GetBytes(data);
+                                stream.Write(dataBytes, 0, dataBytes.Length);
+                            }
                             stream.Flush();
                         }
                         while (data.Trim() != ".");
@@ -52,7 +60,7 @@ namespace SMTPClient
                     }
 
                     message = Console.ReadLine().Trim();
-                    var messageBytes = Encoding.UTF8.GetBytes(message);
+                    var messageBytes = Encoding.ASCII.GetBytes(message);
                     stream.Write(messageBytes, 0, messageBytes.Length);
                     stream.Flush();
                 }

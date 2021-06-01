@@ -65,7 +65,7 @@ namespace SMTPServer
                     {
                         try
                         {
-                            name = response.Substring(5);
+                            name = response.Substring(5).Trim();
                         }
                         catch
                         {
@@ -79,7 +79,7 @@ namespace SMTPServer
                         var recipient = "";
                         try
                         {
-                            recipient = response.Substring(8);
+                            recipient = response.Substring(8).Trim();
                         }
                         catch
                         {
@@ -93,7 +93,7 @@ namespace SMTPServer
                     {
                         try
                         {
-                            sender = response.Substring(10);
+                            sender = response.Substring(10).Trim();
                         }
                         catch
                         {
@@ -111,13 +111,11 @@ namespace SMTPServer
                         else
                         {
                             Write("354 Enter message, ending with \".\" on a line by itself");
-                            var message = "";
                             while (true)
                             {
                                 try
                                 {
-                                    response = Read().Trim();
-                                    Console.WriteLine(response);
+                                    response = Read();
                                 }
                                 catch (Exception e)
                                 {
@@ -130,9 +128,8 @@ namespace SMTPServer
                                     {
                                         break;
                                     }
-                                    message += response;
+                                    data += response == Environment.NewLine ? response : response + Environment.NewLine;
                                 }
-                                message += "\n";
                             }
                             Write("250 OK");
                         }
@@ -156,7 +153,7 @@ namespace SMTPServer
         private void Write(string message)
         {
             var stream = client.GetStream();
-            var messageBytes = Encoding.UTF8.GetBytes(message);
+            var messageBytes = Encoding.ASCII.GetBytes(message);
             stream.Write(messageBytes, 0, messageBytes.Length);
             stream.Flush();
         }
@@ -165,7 +162,7 @@ namespace SMTPServer
         {
             var messageBytes = new byte[8192];
             var numberOfBytes = client.GetStream().Read(messageBytes, 0, 8192);
-            var message = Encoding.UTF8.GetString(messageBytes, 0, numberOfBytes);
+            var message = Encoding.ASCII.GetString(messageBytes, 0, numberOfBytes);
             return message;
         }
     }
